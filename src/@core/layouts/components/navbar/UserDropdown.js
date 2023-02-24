@@ -14,7 +14,7 @@ import { handleLogout } from '@store/actions/auth'
 
 // ** Third Party Components
 import { UncontrolledDropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap'
-import { User, Mail, CheckSquare, MessageSquare, Settings, CreditCard, HelpCircle, Power } from 'react-feather'
+import { User, Mail, CheckSquare, MessageSquare, Settings, CreditCard, HelpCircle, Power, Globe } from 'react-feather'
 
 // ** Default Avatar Image
 import defaultAvatar from '@src/assets/images/portrait/small/avatar-s-11.jpg'
@@ -34,7 +34,7 @@ const UserDropdown = () => {
   }, [])
 
   //** Vars
-  const userAvatar = (userData && userData.avatar) || defaultAvatar
+  const userAvatar = (userData && userData.picture) || defaultAvatar
 
   return (
     <UncontrolledDropdown tag='li' className='dropdown-user nav-item'>
@@ -46,38 +46,13 @@ const UserDropdown = () => {
         <Avatar img={userAvatar} imgHeight='40' imgWidth='40' status='online' />
       </DropdownToggle>
       <DropdownMenu right>
-        <DropdownItem tag={Link} to='/pages/profile'>
-          <User size={14} className='mr-75' />
-          <span className='align-middle'>Profile</span>
+        <DropdownItem tag={Link} to='/apps/instance/view/2'>
+          <Globe size={14} className='mr-75' />
+          <span className='align-middle'>Plataforma</span>
         </DropdownItem>
-        <DropdownItem tag={Link} to='/apps/email'>
-          <Mail size={14} className='mr-75' />
-          <span className='align-middle'>Inbox</span>
-        </DropdownItem>
-        <DropdownItem tag={Link} to='/apps/todo'>
-          <CheckSquare size={14} className='mr-75' />
-          <span className='align-middle'>Tasks</span>
-        </DropdownItem>
-        <DropdownItem tag={Link} to='/apps/chat'>
-          <MessageSquare size={14} className='mr-75' />
-          <span className='align-middle'>Chats</span>
-        </DropdownItem>
-        <DropdownItem divider />
-        <DropdownItem tag={Link} to='/pages/account-settings'>
-          <Settings size={14} className='mr-75' />
-          <span className='align-middle'>Settings</span>
-        </DropdownItem>
-        <DropdownItem tag={Link} to='/pages/pricing'>
-          <CreditCard size={14} className='mr-75' />
-          <span className='align-middle'>Pricing</span>
-        </DropdownItem>
-        <DropdownItem tag={Link} to='/pages/faq'>
-          <HelpCircle size={14} className='mr-75' />
-          <span className='align-middle'>FAQ</span>
-        </DropdownItem>
-        <DropdownItem tag={Link} to='/login' onClick={() => dispatch(handleLogout())}>
+        <DropdownItem tag={Link} to='/logout' onClick={() => dispatch(handleLogout())}>
           <Power size={14} className='mr-75' />
-          <span className='align-middle'>Logout</span>
+          <span className='align-middle'>Cerrar sesión</span>
         </DropdownItem>
       </DropdownMenu>
     </UncontrolledDropdown>

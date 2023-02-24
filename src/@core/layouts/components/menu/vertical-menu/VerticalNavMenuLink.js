@@ -106,7 +106,8 @@ const VerticalNavMenuLink = ({
       >
         {item.icon}
         <span className='menu-item text-truncate'>
-          <FormattedMessage id={item.title} />
+          {/* <FormattedMessage id={item.title} /> */}
+          {item.title}
         </span>
 
         {item.badge && item.badgeText ? (

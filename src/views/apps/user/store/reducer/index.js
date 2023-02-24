@@ -1,31 +1,47 @@
+import { types } from "../types"
+
 // ** Initial State
-const initialState = {
-  allData: [],
+export const initialState = {
   data: [],
-  total: 1,
+  allData: [],
   params: {},
-  selectedUser: null
+  selectedItem: {},
+  newData: {}
 }
 
-const users = (state = initialState, action) => {
+const items = (state = initialState, action) => {
+ // return { ...state, data: action.data, total: action.totalPages, params: action.params }
+
   switch (action.type) {
-    case 'GET_ALL_DATA':
-      return { ...state, allData: action.data }
-    case 'GET_DATA':
+    case types.getData:
       return {
         ...state,
         data: action.data,
         total: action.totalPages,
         params: action.params
       }
-    case 'GET_USER':
-      return { ...state, selectedUser: action.selectedUser }
-    case 'ADD_USER':
+    case types.getItems:
+      return {
+        ...state,
+        allData: action.payload
+      }
+    case types.addItemSelected:
+      return { ...state, selectedItem: action.payload }
+    case types.delItemSelected:
+      return { ...state, selectedItem: {} }
+    case types.addItem:
       return { ...state }
-    case 'DELETE_USER':
+    case types.updateItem:
       return { ...state }
+    case types.deleteItem:
+      return { ...state }
+    case types.addDataNew:
+      return { ...state, newData: action.payload }
+    case types.delDataNew:
+      return { ...state, newData: {} }
+
     default:
       return { ...state }
   }
 }
-export default users
+export default items
