@@ -1,31 +1,27 @@
 // ** Routes Imports
-import AppRoutes from './Apps'
-import FormRoutes from './Forms'
-import PagesRoutes from './Pages'
-import TablesRoutes from './Tables'
-import ChartMapsRoutes from './ChartsMaps'
-import DashboardRoutes from './Dashboards'
-import UiElementRoutes from './UiElements'
-import ExtensionsRoutes from './Extensions'
-import PageLayoutsRoutes from './PageLayouts'
+import AuthRoutes from './Auth'
+import Dashboard from './Dashboard'
+import RoleRoutes from './Role'
+import RoleModulesRoutes from './RoleModules'
+import RolePermissionsRoutes from './RolePermissions'
+import UserRoutes from './User'
+import InstanceRoutes from './Instance'
 
 // ** Document title
-const TemplateTitle = '%s - Vuexy React Admin Template'
+const TemplateTitle = '%s - Sys-SAE - UVirtual'
 
 // ** Default Route
-const DefaultRoute = '/dashboard/ecommerce'
+const DefaultRoute = '/apps/instance/view'
 
 // ** Merge Routes
 const Routes = [
-  ...DashboardRoutes,
-  ...AppRoutes,
-  ...PagesRoutes,
-  ...UiElementRoutes,
-  ...ExtensionsRoutes,
-  ...PageLayoutsRoutes,
-  ...FormRoutes,
-  ...TablesRoutes,
-  ...ChartMapsRoutes
+  ...InstanceRoutes,
+  ...Dashboard,
+  ...AuthRoutes,
+  ...RoleRoutes,
+  ...RoleModulesRoutes,
+  ...RolePermissionsRoutes,
+  ...UserRoutes
 ]
 
 export { DefaultRoute, TemplateTitle, Routes }

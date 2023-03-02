@@ -57,6 +57,7 @@ const Router = () => {
     return { LayoutRoutes, LayoutPaths }
   }
 
+  
   const NotAuthorized = lazy(() => import('@src/views/pages/misc/NotAuthorized'))
 
   // ** Init Error Component
@@ -77,8 +78,8 @@ const Router = () => {
 
     if (
       (!isUserLoggedIn() && route.meta === undefined) ||
-      (!isUserLoggedIn() && route.meta && !route.meta.authRoute && !route.meta.publicRoute)
-    ) {
+      (!isUserLoggedIn() && route.meta && !route.meta.authRoute && !route.meta.publicRoute) 
+      ) {
       /**
        ** If user is not Logged in & route meta is undefined
        ** OR
