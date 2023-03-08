@@ -15,7 +15,7 @@ jobs:
         run: sed -i "s/{HOMEPAGE}/${{ vars.HOMEPAGE_QA }}/" package.json
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: nvm install v16 && npm install
 
       - name: Build project
         run: npm run build
