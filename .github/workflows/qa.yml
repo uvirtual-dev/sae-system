@@ -15,7 +15,7 @@ jobs:
       - name: Build project
         run: npm run build
       - name: Deploy
-        uses: easingthemes/ssh-deploy@v2.1.9
+        uses: easingthemes/ssh-deploy@v4.1.8
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           remote-user: ${{ secrets.SERVER_USER }}
