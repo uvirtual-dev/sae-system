@@ -20,11 +20,11 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           remote-user: ${{ secrets.SERVER_USER }}
           server-ip: ${{ secrets.SERVER_IP }}
-          remote-path: {{env.REMOTE_PATH_QA}}
+          remote-path: ${{env.REMOTE_PATH_QA}}
       - name: Install Docker Compose
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
       - name: Deploy with Docker Compose
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'cd {{env.REMOTE_PATH_QA_COMPOSER}} && docker-compose up --build -d'
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'cd ${{env.REMOTE_PATH_QA_COMPOSER}} && docker-compose up --build -d'
