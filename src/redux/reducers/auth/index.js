@@ -12,6 +12,13 @@ const authReducer = (state = initialState, action) => {
         [action.config.storageTokenKeyName]: action[action.config.storageTokenKeyName],
         [action.config.storageRefreshTokenKeyName]: action[action.config.storageRefreshTokenKeyName]
       }
+    case 'UPDATE LOGIN':
+      return {
+          ...state,
+          userData: action.data,
+          [action.config.storageTokenKeyName]: action[action.config.storageTokenKeyName],
+          [action.config.storageRefreshTokenKeyName]: action[action.config.storageRefreshTokenKeyName]
+    }
     case 'LOGOUT':
       const obj = { ...action }
       delete obj.type

@@ -1,3 +1,8 @@
+
+import themeConfig from '@configs/themeConfig'
+import jwtDecode from 'jwt-decode'
+const baseUrl = process.env.REACT_APP_API_URL
+
 // ** Checks if an object is empty (returns boolean)
 export const isObjEmpty = obj => Object.keys(obj).length === 0
 
@@ -19,6 +24,15 @@ const isToday = date => {
   )
 }
 
+export const capitalizarFirstLetter = (str) => {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+export const gotoFile = (file) => {
+  //console.log("dd", file)  
+  window.open(baseUrl + file)
+}
+
 /**
  ** Format and return date in Humanize format
  ** Intl docs: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/format
@@ -26,9 +40,93 @@ const isToday = date => {
  * @param {String} value date to format
  * @param {Object} formatting Intl object to format with
  */
-export const formatDate = (value, formatting = { month: 'short', day: 'numeric', year: 'numeric' }) => {
-  if (!value) return value
-  return new Intl.DateTimeFormat('en-US', formatting).format(new Date(value))
+// default
+// export const formatDate = (value, formatting = { month: 'short', day: 'numeric', year: 'numeric' }) => {
+//   if (!value) return value
+//   return new Intl.DateTimeFormat('en-US', formatting).format(new Date(value))
+// }
+
+export const formatDate = (date) => {
+  const d = new Date(date)
+  d.setDate(d.getDate() + 1)
+
+
+  let month = `${d.getMonth() + 1}`
+  let day = `${d.getDate()}`
+  const year = d.getFullYear()
+
+  if (month.length < 2) month = `0${month}`
+  if (day.length < 2) day = `0${day}`
+
+  return [day, month, year].join("/")
+}
+
+  //Definición de los subjects
+  export const typesModules = {
+    role: 'role',
+    rolePermissions: 'rolePermissions',
+    roleModules: 'roleModules',
+    user: 'user',
+    instance: 'instance'
+    
+  }
+
+   //Definición de los errores
+   export const typesErrors = {
+    read: 'Error al obtener los registros, por favor actualice la página',
+    update: 'Error al actualizar los registros, por favor actualice la página',
+    delete: 'Error al eliminar los registros, por favor actualice la página'
+   
+  }
+  
+  //Definición de las habilidades
+  export const typesAbilities = {
+      read: 'read', 
+      created: 'create', 
+      updated: 'update', 
+      deleted: 'delete'
+  } 
+
+export const getImageUser = (image) => {
+
+  if (image) {
+    return `${themeConfig.apiUrlImage}${image}`
+  } else {
+    return `${themeConfig.apiUrlImage}avatar.png`
+
+  }
+}
+
+export const getSSmallImageUser = (image) => {
+
+  if (image) {
+    return `${themeConfig.apiUrlImage}small-${image}`
+  } else {
+    return `${themeConfig.apiUrlImage}avatar.png`
+
+  }
+}
+
+export const getDefaultDate = (dayAdd = 0) => {
+  const someDate = new Date()
+  const numberOfDaysToAdd = dayAdd
+  const date = someDate.setDate(someDate.getDate() + numberOfDaysToAdd)
+  return new Date(date).toISOString().split("T")[0]
+}
+
+export const formatDate2 = (date) => {
+  const d = new Date(date)
+  d.setDate(d.getDate() + 1)
+
+
+  let month = `${d.getMonth() + 1}`
+  let day = `${d.getDate()}`
+  const year = d.getFullYear()
+
+  if (month.length < 2) month = `0${month}`
+  if (day.length < 2) day = `0${day}`
+
+  return [year, month, day].join("-")
 }
 
 // ** Returns short month of passed date
@@ -49,7 +147,38 @@ export const formatDateToMonthShort = (value, toTimeForCurrentDay = true) => {
  *  ? e.g. If you are using cookies to store the application please update this function
  */
 export const isUserLoggedIn = () => localStorage.getItem('userData')
+
 export const getUserData = () => JSON.parse(localStorage.getItem('userData'))
+
+export const getAccessToken = () => {
+  const userData = JSON.parse(localStorage.getItem('userData'))
+  if (userData) {
+     return (userData.accessToken && userData.accessToken !== '') ? userData.accessToken : false
+  }
+}
+
+export const isTokenActive = () => {
+  const token = JSON.parse(localStorage.getItem('userData'))
+  let isActive = true
+  if (token) {
+    const decodedToken = jwtDecode(token.accessToken)
+    const currentTime = Date.now() / 1000
+    
+    if (decodedToken.exp < currentTime) isActive = false
+  } else {
+    isActive = false
+  }
+  return isActive
+}
+
+export const setServerInstance = (data) => localStorage.setItem('instance', JSON.stringify(data))
+
+export const getServerInstance = () => JSON.parse(localStorage.getItem('instance'))
+
+export const deleteServerInstance = () => localStorage.removeItem('instance')
+
+export const deleteuserData = () => localStorage.removeItem('userData')
+
 
 /**
  ** This function is used for demo purpose route navigation
@@ -77,3 +206,23 @@ export const selectThemeColors = theme => ({
     neutral30: '#ededed' // for input hover border-color
   }
 })
+
+export const refreshTokenSetup = (res) => {
+  // Timing to renew access token
+  let refreshTiming = (res.tokenObj.expires_in || ((3600 - 5) * 60)) * 1000
+
+  const refreshToken = async () => {
+    const newAuthRes = await res.reloadAuthResponse()
+    refreshTiming = (newAuthRes.expires_in || ((3600 - 5) * 60)) * 1000
+    console.log('newAuthRes:', newAuthRes)
+    // saveUserToken(newAuthRes.access_token);  <-- save new token
+    localStorage.setItem('authToken', newAuthRes.id_token)
+
+    // Setup the other timer after the first one
+    setTimeout(refreshToken, refreshTiming)
+  }
+
+  // Setup first refresh timer
+  setTimeout(refreshToken, refreshTiming)
+}
+

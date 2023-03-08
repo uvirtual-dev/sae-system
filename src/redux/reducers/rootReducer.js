@@ -2,30 +2,34 @@
 import { combineReducers } from 'redux'
 
 // ** Reducers Imports
+import attachment from '@src/views/apps/attachment/store/reducer'
 import auth from './auth'
 import navbar from './navbar'
 import layout from './layout'
-import chat from '@src/views/apps/chat/store/reducer'
-import todo from '@src/views/apps/todo/store/reducer'
-import users from '@src/views/apps/user/store/reducer'
-import email from '@src/views/apps/email/store/reducer'
-import invoice from '@src/views/apps/invoice/store/reducer'
-import calendar from '@src/views/apps/calendar/store/reducer'
-import ecommerce from '@src/views/apps/ecommerce/store/reducer'
-import dataTables from '@src/views/tables/data-tables/store/reducer'
+import user from '@src/views/apps/user/store/reducer'
+import role from '@src/views/apps/role/store/reducer'
+import roleModules from '@src/views/apps/roleModules/store/reducer'
+import rolePermissions from '@src/views/apps/rolePermissions/store/reducer'
+import instance from '@src/views/apps/instance/store/reducer'
 
 const rootReducer = combineReducers({
+  attachment,
   auth,
-  todo,
-  chat,
-  email,
-  users,
-  navbar,
   layout,
-  invoice,
-  calendar,
-  ecommerce,
-  dataTables
+  navbar,
+  role,
+  roleModules,
+  rolePermissions,
+  user,
+  instance
 })
 
-export default rootReducer
+const rootAppReducer = (state, action) => {
+  if (action.type === 'RESET_APP_STATE') {
+    state = undefined
+  }
+
+  return rootReducer(state, action)
+}
+
+export default rootAppReducer

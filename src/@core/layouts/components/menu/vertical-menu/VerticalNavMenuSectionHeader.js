@@ -6,7 +6,8 @@ const VerticalNavMenuSectionHeader = ({ item, index }) => {
   return (
     <li className='navigation-header'>
       <span>
-        <FormattedMessage id={item.header} />
+        {/* <FormattedMessage id={item.header} /> */}
+        {item.header}
       </span>
       <MoreHorizontal className='feather-more-horizontal' />
     </li>

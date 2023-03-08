@@ -92,6 +92,10 @@ export default class JwtService {
     localStorage.setItem(this.jwtConfig.storageRefreshTokenKeyName, value)
   }
 
+  google(...args) {
+    return axios.post(this.jwtConfig.loginGoogleEndpoint, ...args)
+  }
+  
   login(...args) {
     return axios.post(this.jwtConfig.loginEndpoint, ...args)
   }

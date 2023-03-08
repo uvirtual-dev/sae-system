@@ -1,66 +1,164 @@
 // ** React Imports
-import { useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useEffect, useRef } from "react"
+import { useParams, Link } from "react-router-dom"
+import { useSelector, useDispatch } from "react-redux"
 
-// ** Store & Actions
-import { getUser } from '../store/action'
-import { useSelector, useDispatch } from 'react-redux'
+import { store } from "@store/storeConfig/store"
+
+// ** stores & Actions
+import { getItem } from "../store/action"
+import ReactToPrint from "react-to-print"
+import { updateLogin } from '@store/actions/auth'
 
 // ** Reactstrap
-import { Row, Col, Alert } from 'reactstrap'
+import {
+  Row,
+  Col,
+  Alert,
+  Card,
+  CardBody,
+  CardTitle,
+  Button,
+  CardHeader,
+  Breadcrumb,
+  BreadcrumbItem
+} from "reactstrap"
+import BlankLayout from "../../../../@core/layouts/BlankLayout"
+import { Printer } from "react-feather"
 
-// ** User View Components
-import PlanCard from './PlanCard'
-import UserInfoCard from './UserInfoCard'
-import UserTimeline from './UserTimeline'
-import InvoiceList from '../../invoice/list'
-import PermissionsTable from './PermissionsTable'
 
 // ** Styles
-import '@styles/react/apps/app-users.scss'
+import "@styles/react/apps/app-users.scss"
+import { capitalizarFirstLetter, getUserData, isObjEmpty, isUserLoggedIn } from "../../../../utility/Utils"
 
-const UserView = props => {
+const ItemView = (props) => {
   // ** Vars
-  const store = useSelector(state => state.users),
-    dispatch = useDispatch(),
-    { id } = useParams()
+  const storeUserData = useSelector(state => state.auth.userData || {})
+  const store = useSelector((state) => state.user)
+  const dispatch = useDispatch()
+  const { id } = useParams()
+  const componentRef = useRef()
+
+  useEffect(() => {
+    if (isUserLoggedIn() && isObjEmpty(storeUserData)) dispatch(updateLogin(getUserData()))
+    return () => {
+      setRedirect(null)
+    }
+}, [dispatch, store.data.length])
 
   // ** Get suer on mount
+  const getDataItem = () => {
+    dispatch(getItem(id))
+      .then((response) => {
+      })
+      .catch((error) => {
+        //userLogout(false)
+      })
+  }
+
   useEffect(() => {
-    dispatch(getUser(parseInt(id)))
+    if (isUserLoggedIn() && isObjEmpty(storeUserData)) {
+      dispatch(updateLogin(getUserData()))
+    }
+    getDataItem()
   }, [dispatch])
 
-  return store.selectedUser !== null && store.selectedUser !== undefined ? (
-    <div className='app-user-view'>
-      <Row>
-        <Col xl='9' lg='8' md='7'>
-          <UserInfoCard selectedUser={store.selectedUser} />
-        </Col>
-        <Col xl='3' lg='4' md='5'>
-          <PlanCard selectedUser={store.selectedUser} />
-        </Col>
-      </Row>
-      <Row>
-        <Col md='6'>
-          <UserTimeline />
-        </Col>
-        <Col md='6'>
-          <PermissionsTable />
-        </Col>
-      </Row>
-      <Row>
-        <Col sm='12'>
-          <InvoiceList />
-        </Col>
-      </Row>
-    </div>
-  ) : (
-    <Alert color='danger'>
-      <h4 className='alert-heading'>User not found</h4>
-      <div className='alert-body'>
-        User with id: {id} doesn't exist. Check list of all Users: <Link to='/apps/user/list'>Users List</Link>
+  return store.selectedItem !== null && store.selectedItem !== undefined ? (
+    <BlankLayout>
+      <div className="app-user-view">
+        <Breadcrumb>
+          <BreadcrumbItem>
+            <Link to='#'> Inicio </Link>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <Link to='/apps/user/list'> Usuarios </Link>
+          </BreadcrumbItem>
+          <BreadcrumbItem active>
+            <span> Ver Usuario </span>
+          </BreadcrumbItem>
+        </Breadcrumb>
+        <Row>
+          <Col className="text-right mb-2">
+            <ReactToPrint
+              trigger={() => <Button><Printer /></Button>}
+              content={() => componentRef.current}
+            />
+          </Col>
+        </Row>
+        <div ref={componentRef}>
+          <Row>
+            <Col xl="12" lg="12" md="12">
+              <Card>
+
+                <CardBody>
+                  <CardTitle tag='h4'>
+                    {(store.selectedItem.firstName && store.selectedItem.lastName) && (
+                      <span>
+                        <strong>Nombre completo:</strong> {capitalizarFirstLetter(store.selectedItem.firstName)} - {capitalizarFirstLetter(store.selectedItem.lastName)}
+                      </span>
+                    )}
+                  </CardTitle>
+                </CardBody>
+              </Card>
+
+              <Card>
+                <CardBody>
+                  <CardTitle tag="h5">
+                    Información complementaria
+                  </CardTitle>
+                  <Row>
+                    {store.selectedItem.email && (
+                      <Col className="mb-1" xs="12" lg="3" md="3">
+                        <span>
+                          <strong>Email: </strong>
+                          {store.selectedItem.email}
+                        </span>
+                      </Col>
+                    )}
+                    {store.selectedItem.role && (
+                      <Col className="mb-1" xs="12" lg="3" md="3">
+                        <span>
+                          <strong>Rol: </strong>
+                          {store.selectedItem.role.name}
+                        </span>
+                      </Col>
+                    )}
+                    {store.selectedItem.google && (
+                      <Col className="mb-1" xs="12" lg="3" md="3">
+                        <span>
+                          <strong>Vinculado con Google: </strong>
+                          {store.selectedItem.google ? 'Si' : 'No'}
+                        </span>
+                      </Col>
+                    )}
+                    {store.selectedItem.isAdmin && (
+                      <Col className="mb-1" xs="12" lg="3" md="3">
+                        <span>
+                          <strong>Es Admin: </strong>
+                          {store.selectedItem.isAdmin ? 'Si' : 'No'}
+                        </span>
+                      </Col>
+                    )}
+                  </Row>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        </div>
       </div>
-    </Alert>
+    </BlankLayout>
+  ) : (
+    <BlankLayout>
+      <div className='app-general-list'>
+        <Alert color="danger">
+          <h4 className="alert-heading">Item not found</h4>
+          <div className="alert-body">
+            El item con el id : {id} no existe, por favor buscalo en :{" "}
+            <Link to="/apps/agreement/list">la lista de items</Link>
+          </div>
+        </Alert>
+      </div>
+    </BlankLayout>
   )
 }
-export default UserView
+export default ItemView
