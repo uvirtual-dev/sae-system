@@ -112,5 +112,5 @@
     "not dead",
     "not op_mini all"
   ],
-  "homepage": "${HOMEPAGE}"
+  "homepage": "{HOMEPAGE}"
 }
