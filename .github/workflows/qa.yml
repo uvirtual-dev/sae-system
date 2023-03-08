@@ -10,21 +10,29 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.3.0
+
+      - name: Homepage package.json update
+        run: sed -i "s#${HOMEPAGE}#${{ env.HOMEPAGE_QA }}
+
       - name: Install dependencies
-        run: npm install
+        run: npm install --force
+
       - name: Build project
         run: npm run build
+
       - name: Deploy
         uses: easingthemes/ssh-deploy@v4.1.8
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           remote-user: ${{ secrets.SERVER_USER }}
           server-ip: ${{ secrets.SERVER_IP }}
-          remote-path: ${{env.REMOTE_PATH_QA}}
+          remote-path: ${{ env.REMOTE_PATH_QA }}
+
       - name: Install Docker Compose
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
+
       - name: Deploy with Docker Compose
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'cd ${{env.REMOTE_PATH_QA_COMPOSER}} && docker-compose up --build -d'
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'cd ${{ env.REMOTE_PATH_QA_COMPOSER }} && docker-compose up --build -d'
