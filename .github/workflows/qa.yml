@@ -45,8 +45,8 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_USER: ${{ secrets.SERVER_USER }}
           REMOTE_HOST: ${{ secrets.SERVER_IP }}
-          TARGET: ${{ env.REMOTE_PATH_QA }}
+          TARGET: ${{ vars.REMOTE_PATH_QA_FRONT_SAE }}
           SOURCE: "build/"
 
       - name: Deploy with Docker Compose
-        run: cd ${{ env.REMOTE_PATH_QA_COMPOSER }} && docker-compose up --build -d
+        run: cd ${{ vars.REMOTE_PATH_QA_COMPOSER }} && docker-compose up --build -d
