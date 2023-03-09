@@ -12,7 +12,21 @@ jobs:
         uses: actions/checkout@v3.3.0
 
       - name: Homepage package.json update
-        run: sed -i "s/{HOMEPAGE}/${{ vars.HOMEPAGE_QA }}/" package.json
+        run: sed -i "s/{HOMEPAGE}/${{ vars.HOMEPAGE_QA }}/" package.json && cat package.json
+
+      - name: Generar archivo .env
+        uses: actions/github-script@v6.4.0
+        with:
+          script: |
+            const fs = require('fs');
+            const content = `
+            SKIP_PREFLIGHT_CHECK=true\n
+            REACT_APP_BASENAME=/\n
+            REACT_APP_GOOGLE_CLIENT_ID=${{ secrets.REACT_APP_GOOGLE_CLIENT_ID }}\n
+            REACT_APP_API_URL=${{ vars.REACT_APP_API_URL }}\n
+            FRONT_PORT=3050\n
+            CHOKIDAR_USEPOLLING=true\n`;
+            fs.writeFileSync('.env', content);
 
       - name: Set up node version
         uses: actions/setup-node@v3.6.0
@@ -28,10 +42,11 @@ jobs:
       - name: Deploy
         uses: easingthemes/ssh-deploy@v4.1.8
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          remote-user: ${{ secrets.SERVER_USER }}
-          server-ip: ${{ secrets.SERVER_IP }}
-          remote-path: ${{ env.REMOTE_PATH_QA }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_USER: ${{ secrets.SERVER_USER }}
+          REMOTE_HOST: ${{ secrets.SERVER_IP }}
+          TARGET: ${{ env.REMOTE_PATH_QA }}
+          SOURCE: "build/"
 
       - name: Install Docker Compose
         run: |
