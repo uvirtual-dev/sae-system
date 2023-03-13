@@ -11,6 +11,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3.3.0
 
+      - name: Change APP API URL
+        run: sed -i s/{REACT_APP_API_URL}/${{ vars.REACT_APP_API_URL }}/ .env
+
+      - name: Change GOOGLE CLIENT ID
+        run: sed -i s/{REACT_APP_GOOGLE_CLIENT_ID}/${{ vars.REACT_APP_GOOGLE_CLIENT_ID }}/ .env
+
       - name: Set up node version
         uses: actions/setup-node@v3.6.0
         with:
@@ -29,7 +35,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME_QA }}
           password: ${{ secrets.FTP_PASSWORD_QA }}
           server-dir: ${{ vars.REMOTE_PATH_QA_FRONT_SAE }}
-          local-dir: ./dist/
+          local-dir: ./build/
 
       - name: Deploy with Docker Compose
         run: cd ${{ vars.REMOTE_PATH_QA_COMPOSER }} && docker compose up --build -d
