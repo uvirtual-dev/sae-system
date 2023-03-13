@@ -49,4 +49,4 @@ jobs:
           SOURCE: "build/"
 
       - name: Deploy with Docker Compose
-        run: cd ${{ vars.REMOTE_PATH_QA_COMPOSER }} && docker-compose up --build -d
+        run: cd ${{ vars.REMOTE_PATH_QA_COMPOSER }} && docker compose up --build -d
