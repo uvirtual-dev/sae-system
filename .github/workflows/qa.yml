@@ -11,20 +11,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3.3.0
 
-      - name: Generar archivo .env
-        uses: actions/github-script@v6.4.0
-        with:
-          script: |
-            const fs = require('fs');
-            const content = `
-            SKIP_PREFLIGHT_CHECK=true\n
-            REACT_APP_BASENAME=/\n
-            REACT_APP_GOOGLE_CLIENT_ID=${{ secrets.REACT_APP_GOOGLE_CLIENT_ID }}\n
-            REACT_APP_API_URL=${{ vars.REACT_APP_API_URL }}\n
-            FRONT_PORT=3050\n
-            CHOKIDAR_USEPOLLING=true\n`;
-            fs.writeFileSync('.env', content);
-
       - name: Set up node version
         uses: actions/setup-node@v3.6.0
         with:
@@ -34,16 +20,16 @@ jobs:
         run:  npm install --legacy-peer-deps
 
       - name: Build project
-        run: npm run build
+        run: npm run build && ls
 
       - name: Deploy
-        uses: SamKirkland/FTP-Deploy-Action@4.3.3
+        uses: easingthemes/ssh-deploy@v4.1.8
         with:
-          server: ${{ secrets.FTP_HOST_QA }}
-          username: ${{ secrets.FTP_USERNAME_QA }}
-          password: ${{ secrets.FTP_PASSWORD_QA }}
-          server-dir: ${{ vars.REMOTE_PATH_QA_FRONT_SAE }}
-          local-dir: ./build/
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_USER: ${{ secrets.SERVER_USER }}
+          REMOTE_HOST: ${{ secrets.SERVER_IP }}
+          TARGET: ${{ vars.REMOTE_PATH_QA_FRONT_SAE }}
+          SOURCE: "build/"
 
       - name: Deploy with Docker Compose
         run: cd ${{ vars.REMOTE_PATH_QA_COMPOSER }} && docker compose up --build -d
