@@ -95,7 +95,7 @@
     "yup": "0.32.8"
   },
   "scripts": {
-    "start": "craco start",
+    "start": "crac start",
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject",
