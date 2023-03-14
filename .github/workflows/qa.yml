@@ -15,7 +15,7 @@ jobs:
         run: sed -i s#{REACT_APP_API_URL}#${{ vars.REACT_APP_API_URL }}# .env
 
       - name: Change GOOGLE CLIENT ID
-        run: sed -i s/{REACT_APP_GOOGLE_CLIENT_ID}/${{ vars.REACT_APP_GOOGLE_CLIENT_ID }}/ .env
+        run: sed -i s#{REACT_APP_GOOGLE_CLIENT_ID}#${{ secrets.REACT_APP_GOOGLE_CLIENT_ID }}# .env && cat .env
 
       - name: Set up node version
         uses: actions/setup-node@v3.6.0
