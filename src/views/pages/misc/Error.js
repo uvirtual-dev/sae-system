@@ -1,5 +1,4 @@
-import { Button, Alert } from 'reactstrap'
-import { Link } from 'react-router-dom'
+import { Alert } from 'reactstrap'
 import errorImg from '@src/assets/images/pages/error.svg'
 
 import '@styles/base/pages/page-misc.scss'

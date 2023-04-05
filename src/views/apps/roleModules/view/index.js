@@ -9,7 +9,7 @@ import Avatar from "@components/avatar"
 import { store } from "@store/storeConfig/store"
 
 // ** stores & Actions
-import { getItem } from "../store/action"
+import { getRoleModule } from "../store/action"
 import { useSelector, useDispatch } from "react-redux"
 import ReactToPrint from "react-to-print"
 
@@ -41,7 +41,7 @@ const ItemView = (props) => {
 
   // ** Get suer on mount
   useEffect(() => {
-    dispatch(getItem(id))
+    dispatch(getRoleModule(id))
   }, [dispatch])
 
   return state.selectedItem !== null && state.selectedItem !== undefined ? (

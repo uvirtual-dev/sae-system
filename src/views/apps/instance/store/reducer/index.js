@@ -5,8 +5,7 @@ export const initialState = {
   data: [],
   allData: [],
   params: {},
-  selectedItem: {},
-  newData: {}
+  selectedItem: {}
 }
 
 const items = (state = initialState, action) => {
@@ -31,10 +30,6 @@ const items = (state = initialState, action) => {
       return { ...state }
     case types.deleteItem:
       return { ...state }
-    case types.addDataNew:
-      return { ...state, newData: action.payload }
-    case types.delDataNew:
-      return { ...state, newData: {} }
 
     default:
       return { ...state }

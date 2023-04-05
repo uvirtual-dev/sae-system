@@ -49,7 +49,6 @@ const StatsCard = ({ cols, dataStudent }) => {
   useEffect(() => {
     dispatch(getStudentsByYear(yearOptions.value))
       .then((response) => {
-        console.log(response)
         const data = JSON.parse(response.data)
 
         if (data.total) setYearRes(data.total)
@@ -140,7 +139,6 @@ const StatsCard = ({ cols, dataStudent }) => {
 
   return (
     <Fragment>
-      {/* {(!isTokenValid) && <Redirect to="/logout" />} */}
       <Card>
         <CardHeader>
           <CardTitle tag='h4'>Filtrar</CardTitle>

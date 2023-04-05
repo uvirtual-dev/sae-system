@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 
 export const useOptionsSelectModules = (data = []) => {
     const [options, setOptions] = useState([])
-    const arrayOptions = []
+    const arrayOptions = [{ value: '', label: "Seleccione..."}]
     useEffect(() => {
           data.map(item => {
             if (item.status) {

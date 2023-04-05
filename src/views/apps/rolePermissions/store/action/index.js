@@ -6,7 +6,7 @@ import {
   addSelectedPermissions,
   getItem as getItemPermissions
 } from "../../../role/store/action"
-import {getItems as getModules} from '../../../roleModules/store/action'
+import {getRoleModules as getModules} from '../../../roleModules/store/action'
 
 const baseUrl = `${process.env.REACT_APP_API_URL}/api/`
 // ** Get all Data
@@ -183,15 +183,11 @@ export const addData = (item) => {
   }
 }
 
-export const udpateItem = (item, roleId, props) => {
+export const udpateItem = (item, roleId) => {
   return (dispatch, getState) => {
     return new Promise(async(resolve, reject) => {
       try {
-        const config = {
-          headers: {
-            'x-token': getState().auth.userData.accessToken
-          }
-        }
+   
         const data = {
           dataUser: {
             userId: getState().auth.userData.id,
@@ -201,15 +197,12 @@ export const udpateItem = (item, roleId, props) => {
         },
         item
       }
-      
-        await axios.put(`${baseUrl}rolePermissions/updateData`, data, config)
+        await axios.put(`${baseUrl}rolePermissions/updateData`, data)
       .then((response) => {
-        //dispatch(getItemCapabilities(capabilityId))
         dispatch(addSelectedPermissions(roleId))
+
         dispatch(getModules())
-        // if (props.history) {
-        //   props.history.push(`/apps/role/editCapabilities/${item.id}`)
-        // }
+    
         dispatch({
           type: types.updateItem
         })

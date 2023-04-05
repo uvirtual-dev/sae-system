@@ -25,6 +25,12 @@ import {
 } from 'reactstrap'
 
 import '@styles/base/pages/page-auth.scss'
+import handleError from '../../../utility/handle.error'
+
+//Import SWAL
+import Swal from "sweetalert2"
+import withReactContent from "sweetalert2-react-content"
+const MySwal = withReactContent(Swal)
 
 const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID
 
@@ -86,12 +92,17 @@ const Login = props => {
             )
           })
           .catch(error => {
-            console.log(error)
-            toast.warn(
-              <ToastLoginError error={error}/>,
-            { transition: Slide, hideProgressBar: true, autoClose: 2000 }
-            )
-           
+            console.log('ERROOORRRR', error)
+            const { message, status } = handleError(error)
+            const msgHtml = (status === 401 || status === 403) ? `Por favor inicie sesión! <br>. <p class="text-danger">${message}<p>` : `Por favor actualice la página! <br>. <p class="text-danger">${message}<p>`
+            MySwal.fire({
+              title: `Error! ${status}`,
+              html: msgHtml,
+              icon: "error",
+              buttonsStyling: true,
+              showConfirmButton: false
+            })
+                 
           })
       }
   
