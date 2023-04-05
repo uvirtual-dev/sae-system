@@ -16,6 +16,7 @@ import { getStudentsByYear } from '../store/action'
 import Swal from "sweetalert2"
 import withReactContent from "sweetalert2-react-content"
 import { Redirect, useHistory } from 'react-router-dom'
+import handleError from '../../../../utility/handle.error'
 
 const MySwal = withReactContent(Swal)
 const defaultValues = {
@@ -37,9 +38,8 @@ const StatsCard = ({ cols, dataStudent }) => {
     const instance = getServerInstance()
     if (instance) setCurrentInstance(instance.name)
 
-    if (isUserLoggedIn() && isObjEmpty(storeUserData)) {
-      dispatch(updateLogin(getUserData()))
-    }
+    if (isUserLoggedIn() && isObjEmpty(storeUserData)) dispatch(updateLogin(getUserData()))
+  
     return () => {
       setYearOptions(null)
       setYearRes(null)
@@ -47,38 +47,36 @@ const StatsCard = ({ cols, dataStudent }) => {
   }, [dispatch])
 
   useEffect(() => {
+    if (!isTokenValid) {
+      MySwal.fire({
+        title: "Error!",
+        html: `Usuario no autorizado, o su sesión caducó, por favor inicie sesión nuevamente.`,
+        icon: "error",
+        buttonsStyling: true,
+        showConfirmButton: false
+        }).then(() => {
+          history.push("/logout")
+        })
+    } else {
     dispatch(getStudentsByYear(yearOptions.value))
       .then((response) => {
         const data = JSON.parse(response.data)
-
         if (data.total) setYearRes(data.total)
         if (data.totalcount) setYearRes(data.totalcount)
-
-        if (!isTokenValid) {
-          MySwal.fire({
-            title: "Error!",
-            html: `Usuario no autorizado, o su sesión caducó, por favor inicie sesión nuevamente.`,
-            icon: "error",
-            buttonsStyling: true,
-            showConfirmButton: false
-            }).then(() => {
-              history.push("/logout")
-            })
-        }
+       
       }).catch(error => {
-        console.log("Error", error)
-        MySwal.fire({
-          title: "Error!",
-          html: `Ocurrió un error inesperado. <br><br><p>${error.status}</p>`,
-          icon: "error",
-          buttonsStyling: true,
-          showConfirmButton: false
-          })
-        if (error.status === 401) {
-        }
+        const { message, status } = handleError(error)
+        const msgHtml = (status === 401 || status === 403) ? `Por favor inicie sesión! <br>. <p class="text-danger">${message}<p>` : `Por favor actualice la página! <br>. <p class="text-danger">${message}<p>`
+         MySwal.fire({
+             title: `Error! ${status}`,
+             html: msgHtml,
+             icon: "error",
+             buttonsStyling: true,
+             showConfirmButton: false
+         })
 
       })
-
+    }
 
   }, [yearOptions])
 

@@ -27,10 +27,8 @@ const Dashboard = (props) => {
   }
 
   useEffect(() => {
-    if (isUserLoggedIn() && isObjEmpty(storeUserData)) {
-      dispatch(updateLogin(getUserData()))
-    }
-
+    if (isUserLoggedIn() && isObjEmpty(storeUserData)) dispatch(updateLogin(getUserData()))
+  
   }, [dispatch])
 
   return (

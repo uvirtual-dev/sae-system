@@ -35,20 +35,32 @@ export const deleteData = () => {
 export const getStudentsByYear = (year) => {
   return async (dispatch, getState) => {
     return new Promise(async(resolve, reject) => {
-      const instance = getServerInstance()
+      try {
+        const instance = getServerInstance()
         if (instance === null) return  
         const paramYear = (year) ? `&year=${year}` : ''
         await axios.post(`${instance.url}/webservice/rest/server.php?wstoken=${instance.token}&wsfunction=local_uvirtual_get_users_count&moodlewsrestformat=json${paramYear}`)
                     .then((response) => {
-                          dispatch({
-                            type: types.getStudentsByYear,
-                            payload: response.data
-                          })
-                          resolve(response)
+                          if (!response.data.errorcode) {
+                            dispatch({
+                              type: types.getStudentsByYear,
+                              payload: response.data
+                            })
+                            resolve(response)
+                          } else {
+                            console.log(response.data)
+                            throw new Error(response.data)
+                          }
+                          
                         })
                     .catch((error) => {
-                      reject(error)            
+                      throw new Error(error)
                     })
+                  } catch (error) {
+                    console.log(error)
+                    reject(error)            
+              }
+    
     })
   }
 }
