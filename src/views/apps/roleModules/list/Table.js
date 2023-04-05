@@ -2,8 +2,8 @@ import { Fragment, useState, useEffect } from 'react'
 import { Link, Redirect, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Trash, Edit, ExternalLink } from 'react-feather'
-import { Table, Button, Breadcrumb, BreadcrumbItem, Card, CardHeader, CardTitle, Row, Col, CardBody } from 'reactstrap'
+import { Trash, Edit, ExternalLink, MoreVertical, Archive, Trash2 } from 'react-feather'
+import { Table, Button, Breadcrumb, BreadcrumbItem, Card, CardHeader, CardTitle, Row, Col, CardBody, UncontrolledDropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap'
 
 //Swal
 import Swal from "sweetalert2"
@@ -11,7 +11,7 @@ import withReactContent from "sweetalert2-react-content"
 const MySwal = withReactContent(Swal)
 
 //Actions
-import { getItems, deleteItem } from "../store/action"
+import { getRoleModules, deleteRoleModule } from "../store/action"
 import { updateLogin } from '@store/actions/auth'
 
 //Utils
@@ -21,132 +21,126 @@ import { typesModules, getUserData, isObjEmpty, isUserLoggedIn, typesAbilities }
 //Components
 // import Logout from "../../authentication/Logout"
 import { useModal } from '../../../../utility/hooks/useModal'
-import BreadCrumbs from '../../../../@core/components/breadcrumbs'
-import { ModalNewItem } from '../components/ModalNewItem'
+import { ModalNewItem } from './ModalNewItem'
 
 
 const TableList = (props) => {
   // ** States and Hooks
-  const {isLogued, userLogout} = props
-  const state = useSelector(state => state.roleModules || {})
-  const stateUserData = useSelector(state => state.auth.userData || {})
+  const { isLogued, userLogout } = props
+  const store = useSelector(state => state.roleModules || {})
+  const storeUserData = useSelector(state => state.auth.userData || {})
   const [isOpenModal, openModal, closeModal] = useModal(false)
   const dispatch = useDispatch()
 
-  const getDataItems = () => {
-    dispatch(getItems())
-        .then((response) => {
-        })
-        .catch((error) => {
-          //userLogout(false)
-         })
-  }
-  
+
   useEffect(() => {
-    if (isUserLoggedIn() && isObjEmpty(stateUserData)) {
-      dispatch(updateLogin(getUserData()))
-    }
-    getDataItems()
-  }, [])
+    if (isUserLoggedIn() && isObjEmpty(storeUserData)) dispatch(updateLogin(getUserData()))
+
+    dispatch(getRoleModules())
+
+  }, [dispatch])
 
 
-const handleClicDelete = (e, id) => {
-      e.preventDefault()
-      dispatch(deleteItem(id))
+  const handleClicDelete = (e, id) => {
+    e.preventDefault()
+    dispatch(deleteRoleModule(id))
   }
 
   return (
     <Fragment>
-      {(!isLogued) && (<Redirect to='/login' />)}
       <Breadcrumb>
-            <BreadcrumbItem>
-              <Link to='#'> Inicio </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem active>
-              <Link to='/apps/roleModules/list'>Gestión de Módulos</Link>
-            </BreadcrumbItem>
+        <BreadcrumbItem>
+          <Link to='#'> Inicio </Link>
+        </BreadcrumbItem>
+        <BreadcrumbItem active>
+          <Link to='/apps/roleModules/list'>Gestión de Módulos</Link>
+        </BreadcrumbItem>
       </Breadcrumb>
       <Card>
-          <CardHeader className='border-bottom'>
-            <CardTitle tag='h4'> Formulario de Módulos </CardTitle>
-          </CardHeader>
-       </Card>
-    <div >
-    <Card>
-      <CardBody>
+        <CardHeader className='border-bottom'>
+          <CardTitle tag='h4'> Formulario de Módulos </CardTitle>
+        </CardHeader>
+      </Card>
+      <div >
+        <Card>
+          <CardBody>
             <div className="float-right p-2">
-            <Button.Ripple color='primary' onClick={openModal} key={4} outline>
-              Agregar nuevo
-            </Button.Ripple>
-            <ModalNewItem isOpen={isOpenModal} closeModal={closeModal} props={props}/>
+              <Button.Ripple color='primary' onClick={openModal} key={4} outline>
+                Agregar nuevo
+              </Button.Ripple>
+              <ModalNewItem isOpen={isOpenModal} closeModal={closeModal} props={props} />
             </div>
-        <Table responsive>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              (state) &&
-              state.data.map((row, index) => {
-                return (
-                    <tr key={index}>
-                    <td>
-                      <span className='align-middle font-weight-bold'>{row.name}</span>
-                    </td>
-                    <td>
-                      <div className="d-flex justify-content-left align-items-center">
-                          <Link
-                            to={`/apps/roleModules/edit/${row._id}`}
-                            className="user-name text-truncate mb-0"
-                           >
-                            <Button.Ripple className='btn-icon rounded-circle' color='flat-primary'>
-                              <Edit size={20} />
-                            </Button.Ripple>
-                          </Link>
-                          <Button.Ripple 
-                                className='btn-icon rounded-circle' color='danger'
-                                outline
-                                onClick={(e) => {
+            <Table responsive>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  (store) &&
+                  store.data.map((row, index) => {
+                    return (
+                      <tr key={index}>
+                        <td>
+                          <span className='align-middle font-weight-bold'>{row.name}</span>
+                        </td>
+                        <td>
+                          <UncontrolledDropdown>
+                            <DropdownToggle tag='div' className='btn btn-sm'>
+                              <MoreVertical size={14} className='cursor-pointer' />
+                            </DropdownToggle>
+                            <DropdownMenu right>
+                              <DropdownItem
+                                tag={Link}
+                                to={`/apps/roleModules/edit/${row._id}`}
+                                className='w-100'
+                              >
+                                <Archive size={14} className='mr-50' />
+                                <span className='align-middle'>Editar</span>
+                              </DropdownItem>
+                              <DropdownItem className='w-100'
+                                onClick={() => {
                                   MySwal.fire({
                                     title: "¿Quieres borrar este item?",
                                     icon: "info",
-                                    showCancelButton: true,
                                     customClass: {
                                       confirmButton: "btn btn-danger mr-2",
-                                      cancelButton: "btn btn-primary mr-2"
+                                      cancelButton: "btn btn-primary"
                                     },
-                                  
+                                    showCancelButton: true,
                                     buttonsStyling: true,
                                     confirmButtonText: "Si, Borrarlo",
                                     cancelButtonText: "Cancelar"
                                   }).then((result) => {
                                     if (result.isConfirmed) {
-                                      handleClicDelete(e, row._id) 
+                                      dispatch(deleteRoleModule(row._id))
                                     } else if (result.isDenied) {
                                       MySwal.fire("Changes are not saved", "", "info")
                                     }
                                   })
                                 }}
-                          >
-                            <Trash size={15} />
-                            </Button.Ripple>
-                        </div>
-                    </td>
-                  </tr>
-                )
-                              
-              })
-            }
-           
-          </tbody>
-        </Table> 
-      </CardBody>
-    </Card>
+                              >
+                                <Trash2 size={14} className='mr-50' />
+                                <span className='align-middle'>Eliminar</span>
+                              </DropdownItem>
+                            </DropdownMenu>
+                          </UncontrolledDropdown>
 
-    </div> 
+                        </td>
+                      </tr>
+                    )
+
+                  })
+                }
+
+              </tbody>
+            </Table>
+          </CardBody>
+        </Card>
+
+      </div>
     </Fragment>
   )
 }

@@ -8,23 +8,6 @@ const baseUrl = `${process.env.REACT_APP_API_URL}/api/`
 
 // ** Get all Data
 
-export const addNewData = (data) => {
-  return async (dispatch) => {
-    dispatch({
-      type: types.addDataNew,
-      payload: data
-    })
-  }
-}
-
-export const delNewData = () => {
-  return async (dispatch) => {
-    dispatch({
-      type: types.delDataNew
-    })
-  }
-}
-
 export const delSelectedItem = () => {
   return async (dispatch) => {
     dispatch({
@@ -33,64 +16,66 @@ export const delSelectedItem = () => {
   }
 }
 
-export const getData = (params) => {
+export const getUsersPaginate = (params) => {
   return async (dispatch, getState) => {
-    return new Promise(async(resolve, reject) => {
-        
+    return new Promise(async (resolve, reject) => {
+      try {
         const data = {
-            dataUser: {
-              ability: typesAbilities.read,
-              subject: typesModules.user
+          dataUser: {
+            ability: typesAbilities.read,
+            subject: typesModules.user
           },
           params
         }
         await axios.post(`${baseUrl}user/getItemsPaginate`, data)
-                  .then((response) => {
-                    dispatch({
-                      type: types.getData,
-                      data: response.data.docs,
-                      totalPages: response.data.totalDocs,
-                      params
-                    })
-                    resolve(response)
-                }).catch((error) => {
-                  reject(error)
-                })
+          .then((response) => {
+            dispatch({
+              type: types.getData,
+              data: response.data.docs,
+              totalPages: response.data.totalDocs,
+              params,
+              isLoading: false
+            })
+            resolve(response)
+          }).catch((error) => {
+            throw new Error(error)
+          })
+      } catch (error) {
+        reject(error)
 
-     })
-                
-   }
- 
+      }
+
+
+    })
+
+  }
+
 }
 
 // ** Get data on page or row change
-export const getItems = () => {
+export const getUsers = () => {
   return async (dispatch, getState) => {
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
-    
-      const data = {
-            dataUser: {
-              userId: getState().auth.userData.id,
-              ability: typesAbilities.read,
-              subject: typesModules.user
+        const data = {
+          dataUser: {
+            ability: typesAbilities.read,
+            subject: typesModules.user
           }
         }
         await axios.post(`${baseUrl}user/getItems`, data)
-        .then((response) => {
-              dispatch({
-                type: types.getItems,
-                payload: response.data
-              })
-              resolve(response)
+          .then((response) => {
+            dispatch({
+              type: types.getItems,
+              payload: response.data
             })
-        .catch((error) => {
-          throw new Error(error)            
-        })
-  
-          } catch (error) {
-            console.log(error)
-            reject(error)
+            resolve(response)
+          })
+          .catch((error) => {
+            throw new Error(error)
+          })
+      } catch (error) {
+        reject(error)
       }
     })
 
@@ -99,143 +84,128 @@ export const getItems = () => {
 
 
 // ** Get Item
-export const getItem = (id) => {
+export const getUser = (id) => {
   return (dispatch, getState) => {
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
-          const config = {
-            headers: {
-              'x-token': getState().auth.userData.accessToken
-            }
+        const data = {
+          dataUser: {
+            ability: typesAbilities.read,
+            subject: typesModules.user
           }
-          const data = {
-              dataUser: {
-                userId: getState().auth.userData.id,
-                ability: typesAbilities.read,
-                subject: typesModules.user
-            }
-          }
-          console.log(config, data)
-          await axios.post(`${baseUrl}user/getItem/${id}`, data, config)
-            .then((response) => {
-              dispatch({
-                type: types.addItemSelected,
-                payload: response.data
+        }
+        await axios.post(`${baseUrl}user/getItem/${id}`, data)
+          .then((response) => {
+            dispatch({
+              type: types.addItemSelected,
+              payload: response.data
 
-              })
-              resolve(response)
             })
-            .catch((error) => {
-              throw new Error(error)
-            })
-        
+            resolve(response)
+          })
+          .catch((error) => {
+            throw new Error(error)
+
+          })
       } catch (error) {
-        console.log(error)
+
         reject(error)
       }
+
     })
 
   }
 }
 
 // ** Add new item
-export const addItem = (item) => {
+export const addUser = (item) => {
   return (dispatch, getState) => {
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
-      const config = {
-        headers: {
-          'x-token': getState().auth.userData.accessToken
+        const data = {
+          dataUser: {
+            ability: typesAbilities.created,
+            subject: typesModules.user
+          },
+          ...item
         }
-      }
-      console.log("SUCEDE", item)
-      await  axios.post(`${baseUrl}user/createItem`, item, config)
-      .then((response) => {
-        dispatch({
-          type: types.addItem,
-          item
-        })
-        dispatch(getData(getState().user.params))
-        resolve(response)
-      })
-      .catch((error) => {
-        throw new Error(error)
-      })
+        await axios.post(`${baseUrl}user/createItem`, data)
+          .then((response) => {
+            dispatch({
+              type: types.addItem,
+              item
+            })
+            dispatch(getUsersPaginate(getState().user.params))
+            resolve(response)
+          })
+          .catch((error) => {
+            throw new Error(error)
+          })
       } catch (error) {
-        console.log(error)
-         reject(error)
+        reject(error)
       }
+
     })
-    
   }
 }
 
 
-export const udpateItem = (item, props) => {
+export const udpateUser = (item) => {
   return (dispatch, getState) => {
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
-        const config = {
-          headers: {
-            'x-token': getState().auth.userData.accessToken
-          }
+        const data = {
+          dataUser: {
+            ability: typesAbilities.updated,
+            subject: typesModules.user
+          },
+          ...item
         }
-        await axios.put(`${baseUrl}user/updateItem/${item.id}`, item, config)
-      .then((response) => {
-        if (props.history) {
-          props.history.push(`/apps/user/list`)
-        }
-        dispatch({
-          type: types.updateItem
-        })
-    
-         resolve(response)
-      })
-      .catch((error) => {
-        throw new Error(error)
-      })
+        await axios.put(`${baseUrl}user/updateItem/${item.id}`, data)
+          .then((response) => {
+            dispatch({
+              type: types.updateItem
+            })
+
+            resolve(response)
+          })
+          .catch((error) => {
+            throw new Error(error)
+          })
       } catch (error) {
-         console.log(error)
-         reject(error)
+        reject(error)
       }
-      
     })
   }
 }
 
 
 // ** Delete user
-export const deleteItem = (id) => {
+export const deleteUser = (id) => {
   return (dispatch, getState) => {
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
-      const config = {
-        headers: {
-          'x-token': getState().auth.userData.accessToken
+        const data = {
+          dataUser: {
+            ability: typesAbilities.deleted,
+            subject: typesModules.user
+          },
+          id
         }
-      }
-      const data = {
-        dataUser: {
-          userId: getState().auth.userData.id,
-          ability: typesAbilities.deleted,
-          subject: typesModules.user
-      },
-      id
-    }
-      await  axios
-              .post(`${baseUrl}user/deleteItem/${id}`, data, config)
-              .then((response) => {
-                  dispatch({
-                    type: types.deleteItem
-                  })
-                  dispatch(getData(getState().user.params))
-                  resolve(response)
-              })
-              .catch((error) => {
-        throw new Error(error)
-      })
+        await axios
+          .post(`${baseUrl}user/deleteItem/${id}`, data)
+          .then((response) => {
+            dispatch({
+              type: types.deleteItem
+            })
+            dispatch(getUsersPaginate(getState().user.params))
+            resolve(response)
+          })
+          .catch((error) => {
+            throw new Error(error)
+          })
       } catch (error) {
-         reject(error)
+        reject(error)
       }
     })
   }
@@ -249,7 +219,7 @@ export const cloneItem = (id) => {
         dispatch(setEditOn(Math.random(), response.data.items))
       })
       .then(() => {
-        dispatch(getData(getState().programs.params))
+        dispatch(getUsersPaginate(getState().programs.params))
       })
   }
 }

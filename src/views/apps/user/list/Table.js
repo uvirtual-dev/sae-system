@@ -1,5 +1,5 @@
 // ** React Imports
-import { Fragment, useState, useEffect } from 'react'
+import { Fragment, useState, useEffect, useMemo } from 'react'
 // ** Invoice List Sidebar
 import Swal from "sweetalert2"
 import withReactContent from "sweetalert2-react-content"
@@ -9,10 +9,10 @@ const MySwal = withReactContent(Swal)
 import { columns } from './columns'
 
 // ** Store & Actions
-import { delNewData, getAllData, getData } from '../store/action'
+import { getUsersPaginate } from '../store/action'
 import { useDispatch, useSelector } from 'react-redux'
 import { updateLogin } from '@store/actions/auth'
-import { getItems as getRoles } from '../../role/store/action'
+import { getRoles as getRoles } from '../../role/store/action'
 // ** Third Party Components
 import Select from 'react-select'
 import ReactPaginate from 'react-paginate'
@@ -22,17 +22,19 @@ import { selectThemeColors } from '@utils'
 import { useModal } from '../../../../utility/hooks/useModal'
 
 import { Card, CardHeader, CardTitle, CardBody, Input, Row, Col, Label, CustomInput, Button, Breadcrumb, BreadcrumbItem } from 'reactstrap'
-import { ModalNewItem } from '../new/ModalNewItem'
+import { ModalNewItem } from './ModalNewItem'
 
 // ** Styles
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
-import { getUserData, isObjEmpty, isUserLoggedIn, typesErrors } from '../../../../utility/Utils'
+import { getUserData, isObjEmpty, isTokenActive, isUserLoggedIn } from '../../../../utility/Utils'
 import useDebounce from '../../../../utility/hooks/useDebounce'
 import { Link, useHistory } from 'react-router-dom'
 import { types } from '../store/types'
 
 import { Can } from '../../../../utility/context/Can'
+import ErrorBoundary from '../../../../utility/error.boundary'
+import { useOptionsSelectModules } from '../../../../utility/hooks/useOptionsSelectModules'
 // ** Table Header
 const CustomHeader = ({ toggleSidebar, handlePerPage, rowsPerPage, handleFilter, searchTerm, setSearchTerm }) => {
   return (
@@ -83,7 +85,6 @@ const CustomHeader = ({ toggleSidebar, handlePerPage, rowsPerPage, handleFilter,
 }
 
 const UsersList = (props) => {
-  const { isLogued, userLogout } = props
   const history = useHistory()
 
   // ** Store Vars
@@ -96,37 +97,34 @@ const UsersList = (props) => {
   const [columnsSearch, setColumnsSearch] = useState(["firstName", "lastName", "email", "role"])
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [currentRole, setCurrentRole] = useState({ value: '', label: 'Seleccione Rol' })
-  const [roleOptions, setRoleOptions] = useState([])
   const [isOpenModal, openModal, closeModal] = useModal(false)
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
-  // const [currentPlan, setCurrentPlan] = useState({ value: '', label: 'Select Plan' })
-  // const [currentStatus, setCurrentStatus] = useState({ value: '', label: 'Select Status', number: 0 })
+  const roleOptions = useOptionsSelectModules(storeRole.allData)
 
-  // ** Function to toggle sidebar
-  // const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
-
+  const isTokenValid = useMemo(() => isTokenActive())
 
   useEffect(() => {
-    const options = []
-    if (storeRole.allData.length > 0) {
-      storeRole.allData.map((item, index) => {
-        options.push({ value: item._id, label: item.name })
+    if (storeRole.allData.length === 0) {
+      dispatch(getRoles())
+    }
+  }, [storeRole.allData.length])
+
+  useEffect(() => {
+    if (isUserLoggedIn() && isObjEmpty(storeUserData)) dispatch(updateLogin(getUserData()))
+    if (!isTokenValid) {
+      MySwal.fire({
+        title: "Error!",
+        html: `Usuario no autorizado, o su sesión caducó, por favor inicie sesión nuevamente.`,
+        icon: "error",
+        buttonsStyling: true,
+        showConfirmButton: false
+      }).then(() => {
+        history.push("/logout")
       })
-    }
-    setRoleOptions(options)
-
-  }, [dispatch, storeRole.allData.length])
-
-  // ** Get data on mount
-  useEffect(() => {
-    if (isUserLoggedIn() && isObjEmpty(storeUserData)) {
-      dispatch(updateLogin(getUserData()))
-    }
-    
+    } else {
       dispatch(
-        getData({
+        getUsersPaginate({
           page: currentPage,
           perPage: rowsPerPage,
           role: currentRole.value,
@@ -135,62 +133,17 @@ const UsersList = (props) => {
           sortDirection: "desc",
           searchTerm
         })
-      ).then(res => {
-        console.log("RESPUESTAAAAAA", res)
-        if (!res) {
-          MySwal.fire({
-            title: "Error!",
-            text: error,
-            html: `Su sesión a expirado <p><h2>Por favor inicia sesión</h2><p>`,
-            icon: "error",
-            buttonsStyling: true,
-            showConfirmButton: false
-            })
-        }
-
-      }).catch((error) => {
-          if (error.status === 401) {
-              console.log("No autorizadoss")
-                  MySwal.fire({
-                  title: "Error!",
-                  text: error.statusText,
-                  html: `${error} <p><h2>Usuario No autorizado </h2><p>`,
-                  icon: "error",
-                  buttonsStyling: true,
-                  showConfirmButton: false
-                  })
-                  history.push("/login")
-          }
-        // console.log("??? ERRORRRRR", error)
-        // MySwal.fire({
-        //   title: "Error!",
-        //   text: error,
-        //   html: `${error} <p><h2>Por favor actualiza la página </h2><p>`,
-        //   icon: "error",
-        //   buttonsStyling: true,
-        //   showConfirmButton: false
-        //   })
+      ).catch((error) => {
+        const { message, status } = handleError(error)
+        const msgHtml = (status === 401 || status === 403) ? `Sucedió un error con la petición! <br>. <p class="text-danger">${message}<p>` : `Por favor actualice la página! <br>. <p class="text-danger">${message}<p>`
+        MySwal.fire({
+          title: `Error! ${status}`,
+          html: msgHtml,
+          icon: "error",
+          buttonsStyling: true,
+          showConfirmButton: false
+        })
       })
-  
- 
-    // dispatch(
-    //   getData({
-    //     page: currentPage,
-    //     perPage: rowsPerPage,
-    //     role: currentRole.value,
-    //     columns: columnsSearch,
-    //     sort: "_id",
-    //     sortDirection: "desc",
-    //     searchTerm
-    //   })
-    // ).then((response) => {
-    //   console.log(`%c ${response}`, 'color:blue;font-weight:bold;')
-    // })
-
-    dispatch(getRoles())
-
-    if (!isObjEmpty(store.newData)) {
-      dispatch(delNewData())
     }
 
     if (!isObjEmpty(store.selectedItem)) {
@@ -205,7 +158,7 @@ const UsersList = (props) => {
   // ** Function in get data on page change
   const handlePagination = page => {
     dispatch(
-      getData({
+      getUsersPaginate({
         page: page.selected + 1,
         perPage: rowsPerPage,
         role: currentRole.value,
@@ -214,8 +167,16 @@ const UsersList = (props) => {
         sortDirection: "desc",
         searchTerm
       })
-    ).then((response) => {
-      console.log(`%c ${response}`, 'color:blue;font-weight:bold;')
+    ).catch((error) => {
+      const { message, status } = handleError(error)
+      const msgHtml = (status === 401 || status === 403) ? `Sucedió un error con la petición! <br>. <p class="text-danger">${message}<p>` : `Por favor actualice la página! <br>. <p class="text-danger">${message}<p>`
+      MySwal.fire({
+        title: `Error! ${status}`,
+        html: msgHtml,
+        icon: "error",
+        buttonsStyling: true,
+        showConfirmButton: false
+      })
     })
     setCurrentPage(page.selected + 1)
   }
@@ -224,7 +185,7 @@ const UsersList = (props) => {
   const handlePerPage = e => {
     const value = parseInt(e.currentTarget.value)
     dispatch(
-      getData({
+      getUsersPaginate({
         page: currentPage,
         perPage: value,
         role: currentRole.value,
@@ -233,34 +194,23 @@ const UsersList = (props) => {
         sortDirection: "desc",
         searchTerm
       })
-    ).then((response) => {
-      console.log(`%c ${response}`, 'color:blue;font-weight:bold;')
+    ).catch((error) => {
+      const { message, status } = handleError(error)
+      const msgHtml = (status === 401 || status === 403) ? `Sucedió un error con la petición! <br>. <p class="text-danger">${message}<p>` : `Por favor actualice la página! <br>. <p class="text-danger">${message}<p>`
+      MySwal.fire({
+        title: `Error! ${status}`,
+        html: msgHtml,
+        icon: "error",
+        buttonsStyling: true,
+        showConfirmButton: false
+      })
     })
     setRowsPerPage(value)
   }
 
-  // ** Function in get data on search query change
-  const handleFilter = val => {
-    // setSearchTerm(val)
-    // dispatch(
-    //   getData({
-    //     page: currentPage,
-    //     perPage: rowsPerPage,
-    //     role: currentRole.value,
-    //     columns: columnsSearch,
-    //     sort: "_id",
-    //     sortDirection: "desc",
-    //     searchTerm: val
-    //   })
-    // ).then((response) => {
-    //   console.log(`%c ${response}`, 'color:blue;font-weight:bold;')
-    // })
-  }
-
   useEffect(() => {
-    // if (debouncedSearchTerm) {
     dispatch(
-      getData({
+      getUsersPaginate({
         page: currentPage,
         perPage: rowsPerPage,
         role: currentRole.value,
@@ -269,16 +219,23 @@ const UsersList = (props) => {
         sortDirection: "desc",
         searchTerm: debouncedSearchTerm
       })
-    ).then((response) => {
-      console.log(`%c ${response}`, 'color:blue;font-weight:bold;')
+    ).catch((error) => {
+      const { message, status } = handleError(error)
+      const msgHtml = (status === 401 || status === 403) ? `Sucedió un error con la petición! <br>. <p class="text-danger">${message}<p>` : `Por favor actualice la página! <br>. <p class="text-danger">${message}<p>`
+      MySwal.fire({
+        title: `Error! ${status}`,
+        html: msgHtml,
+        icon: "error",
+        buttonsStyling: true,
+        showConfirmButton: false
+      })
     })
-    // } 
   }, [debouncedSearchTerm])
 
   const sorting = (column, direction, event) => {
     console.log("sorting", event)
     dispatch(
-      getData({
+      getUsersPaginate({
         columns: columnsSearch,
         page: currentPage,
         perPage: rowsPerPage,
@@ -286,8 +243,16 @@ const UsersList = (props) => {
         sortDirection: direction,
         searchTerm
       })
-    ).then((response) => {
-      console.log(`%c ${response}`, 'color:blue;font-weight:bold;')
+    ).catch((error) => {
+      const { message, status } = handleError(error)
+      const msgHtml = (status === 401 || status === 403) ? `Sucedió un error con la petición! <br>. <p class="text-danger">${message}<p>` : `Por favor actualice la página! <br>. <p class="text-danger">${message}<p>`
+      MySwal.fire({
+        title: `Error! ${status}`,
+        html: msgHtml,
+        icon: "error",
+        buttonsStyling: true,
+        showConfirmButton: false
+      })
     })
   }
 
@@ -317,7 +282,7 @@ const UsersList = (props) => {
 
   const handleChangeSelect = (roleId) => {
     dispatch(
-      getData({
+      getUsersPaginate({
         page: currentPage,
         perPage: rowsPerPage,
         role: roleId,
@@ -326,8 +291,16 @@ const UsersList = (props) => {
         sortDirection: "desc",
         searchTerm
       })
-    ).then((response) => {
-      console.log(`%c ${response}`, 'color:blue;font-weight:bold;')
+    ).catch((error) => {
+      const { message, status } = handleError(error)
+      const msgHtml = (status === 401 || status === 403) ? `Sucedió un error con la petición! <br>. <p class="text-danger">${message}<p>` : `Por favor actualice la página! <br>. <p class="text-danger">${message}<p>`
+      MySwal.fire({
+        title: `Error! ${status}`,
+        html: msgHtml,
+        icon: "error",
+        buttonsStyling: true,
+        showConfirmButton: false
+      })
     })
   }
 
@@ -388,12 +361,14 @@ const UsersList = (props) => {
             </Col>
             <Col md='8'>
               <div className="float-right">
-                {/* <Can I="create" a="typesTitulation"> */}
-                <Button.Ripple color='primary' onClick={openModal} key={4} outline>
-                  Agregar
-                </Button.Ripple>
-                <ModalNewItem isOpen={isOpenModal} closeModal={closeModal} props={props} />
-                {/* </Can> */}
+                <Can I="create" a="user">
+                  <Button.Ripple color='primary' onClick={openModal} key={4} outline>
+                    Agregar
+                  </Button.Ripple>
+                  <ErrorBoundary>
+                    <ModalNewItem isOpen={isOpenModal} closeModal={closeModal} props={props} />
+                  </ErrorBoundary>
+                </Can>
               </div>
             </Col>
           </Row>
@@ -414,7 +389,6 @@ const UsersList = (props) => {
           data={dataToRender()}
           subHeaderComponent={
             <CustomHeader
-              handleFilter={handleFilter}
               handlePerPage={handlePerPage}
               rowsPerPage={rowsPerPage}
               searchTerm={searchTerm}
@@ -425,7 +399,6 @@ const UsersList = (props) => {
         />
       </Card>
 
-      {/* <Sidebar open={sidebarOpen} toggleSidebar={toggleSidebar} /> */}
     </Fragment>
   )
 }

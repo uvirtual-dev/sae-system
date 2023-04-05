@@ -8,9 +8,6 @@ export const types = {
     updateItem: '[instance] Update Item', 
     deleteItem: '[instance] Delete Item',
     
-    addDataNew: '[instance] Add dataNew', 
-    delDataNew: '[instance] Delete dataNew',
-
     addItemSelected: '[instance] Add Item Selected',
     delItemSelected: '[instance] Del Item Selected'
 

@@ -46,7 +46,7 @@ const instance = [
           navLink: "/apps/instance/view"
         }
       }
-      
+
 ]
 
 export default instance

@@ -10,7 +10,7 @@ const MySwal = withReactContent(Swal)
 import Avatar from "@components/avatar"
 
 // ** Store & Actions
-import { getItem, deleteItem, setEditOn } from "../store/action"
+import { getUser, deleteUser, setEditOn } from "../store/action"
 import { store } from "@store/storeConfig/store"
 
 // ** Third Party Components
@@ -69,7 +69,7 @@ export const columns = [
           <Link
             to={`/apps/user/view/${row._id}`}
             className="user-name text-truncate mb-0"
-            onClick={() => store.dispatch(getItem(row._id))}
+            onClick={() => store.dispatch(getUser(row._id))}
           >
             <span className="font-weight-bold">{row.firstName} {row.lastName}</span>
           </Link>
@@ -102,22 +102,20 @@ export const columns = [
     sortable: true,
     cell: (row) => (
       <UncontrolledDropdown>
-      <DropdownToggle tag='div' className='btn btn-sm'>
-        <MoreVertical size={14} className='cursor-pointer' />
-      </DropdownToggle>
-      <DropdownMenu right>
-        <DropdownItem
-          tag={Link}
-          to={`/apps/user/edit/${row._id}`}
-          className='w-100'
-          // onClick={() => store.dispatch(getUser(row.id))}
-        >
-          <Archive size={14} className='mr-50' />
-          <span className='align-middle'>Editar</span>
-        </DropdownItem>
-        <DropdownItem className='w-100' 
-        // onClick={() => store.dispatch(deleteUser(row.id))}
-               onClick={() => {
+        <DropdownToggle tag='div' className='btn btn-sm'>
+          <MoreVertical size={14} className='cursor-pointer' />
+        </DropdownToggle>
+        <DropdownMenu right>
+          <DropdownItem
+            tag={Link}
+            to={`/apps/user/edit/${row._id}`}
+            className='w-100'
+          >
+            <Archive size={14} className='mr-50' />
+            <span className='align-middle'>Editar</span>
+          </DropdownItem>
+          <DropdownItem className='w-100'
+            onClick={() => {
               MySwal.fire({
                 title: "¿Quieres borrar este item?",
                 icon: "info",
@@ -131,56 +129,19 @@ export const columns = [
                 cancelButtonText: "Cancelar"
               }).then((result) => {
                 if (result.isConfirmed) {
-                  store.dispatch(deleteItem(row._id))
+                  store.dispatch(deleteUser(row._id))
                 } else if (result.isDenied) {
                   MySwal.fire("Changes are not saved", "", "info")
                 }
               })
             }}
-        >
-          <Trash2 size={14} className='mr-50' />
-          <span className='align-middle'>Eliminar</span>
-        </DropdownItem>
-      </DropdownMenu>
-    </UncontrolledDropdown>
-      // <div>
-      //     <Button.Ripple
-      //       className="btn-icon mr-50"
-      //       outline
-      //       color="primary"
-      //     ><Link to={`/apps/user/edit/${row._id}`}>
-      //         <Edit size={14} />
-      //       </Link>
-      //     </Button.Ripple>
-      //     <Button.Ripple
-      //       className="btn-icon"
-      //       outline
-      //       color="danger"
-      //       onClick={() => {
-      //         MySwal.fire({
-      //           title: "¿Quieres borrar este item?",
-      //           icon: "info",
-      //           customClass: {
-      //             confirmButton: "btn btn-danger mr-2",
-      //             cancelButton: "btn btn-primary"
-      //           },
-      //           showCancelButton: true,
-      //           buttonsStyling: true,
-      //           confirmButtonText: "Si, Borrarlo",
-      //           cancelButtonText: "Cancelar"
-      //         }).then((result) => {
-      //           if (result.isConfirmed) {
-      //             store.dispatch(deleteItem(row._id))
-      //           } else if (result.isDenied) {
-      //             MySwal.fire("Changes are not saved", "", "info")
-      //           }
-      //         })
-      //       }}
-      //     >
-      //       <Trash2 size={14} />
-      //     </Button.Ripple>
-        
-      // </div>
+          >
+            <Trash2 size={14} className='mr-50' />
+            <span className='align-middle'>Eliminar</span>
+          </DropdownItem>
+        </DropdownMenu>
+      </UncontrolledDropdown>
+
     )
   }
 

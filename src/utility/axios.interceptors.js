@@ -1,7 +1,9 @@
 import axios from "axios"
-import { getAccessToken } from "./Utils"
+import { getAccessToken, isTokenActive } from "./Utils"
 
 import errorResponse from "./error.response"
+import handleError from "./handle.error"
+const abortController = new AbortController()
 
 export const AxiosInterceptor = () => {
 
@@ -28,21 +30,23 @@ export const AxiosInterceptor = () => {
             const token = getAccessToken()
             if (token) updateHeaderToken(request, token)
         }
-
         if (request.url && (request.url.includes("webservice/rest/server.php"))) {
              updateHeaderWs(request)
         }
         return request
     }, (error) => {
+
         return Promise.reject(error)
     })
 
     axios.interceptors.response.use(
             (response) => response,
             (error) => {
-                if (error.response.status !== 401) {
-                    errorResponse(error.response)
-                }
+              handleError(error)
               return  Promise.reject(error.response)
             })
+}
+
+export const abort = () => {
+    abortController.abort()
 }

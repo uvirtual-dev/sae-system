@@ -3,6 +3,7 @@ import themeConfig from '@configs/themeConfig'
 import jwtDecode from 'jwt-decode'
 const baseUrl = process.env.REACT_APP_API_URL
 
+
 // ** Checks if an object is empty (returns boolean)
 export const isObjEmpty = obj => Object.keys(obj).length === 0
 

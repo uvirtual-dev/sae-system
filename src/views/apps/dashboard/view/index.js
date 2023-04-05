@@ -18,28 +18,31 @@ const Index = () => {
   const [selectPlatform, setSelectPlatform] = useState(true)
   const instanceLocal = getServerInstance()
   const instance = useSelector(state => state.instance.selectedItem)
-  
-  useEffect(() => {
-    if (instanceLocal === null && isObjEmpty(instance)) {
-      setSelectPlatform(false)
-          MySwal.fire({
-          title: "Sin acceso!",
-          html: "Por favor, primero seleccione la plataforma.",
-          icon: "info",
-          buttonsStyling: true,
-          confirmButtonText: "Ok"
-        })
-    }
-    
-  }, [selectPlatform])
-  
 
-  return (selectPlatform) ? (
-              <Fragment>
-                <ErrorBoundary>
-                  <Dashboard />
-                </ErrorBoundary>
-              </Fragment>
-         ) : <Redirect to="/apps/instance/view"/>
+  useEffect(() => {
+    if (instanceLocal === null) {
+      setSelectPlatform(false)
+
+      MySwal.fire({
+        title: "Sin acceso!",
+        html: "Por favor, primero seleccione la plataforma.",
+        icon: "info",
+        buttonsStyling: true,
+        confirmButtonText: "Ok"
+      })
+    } else {
+      setSelectPlatform(true)
+    }
+
+  }, [instanceLocal, selectPlatform])
+
+
+  return (selectPlatform && instanceLocal && instanceLocal !== null && instanceLocal !== undefined) ? (
+    <Fragment>
+      <ErrorBoundary>
+        <Dashboard />
+      </ErrorBoundary>
+    </Fragment>
+  ) : <Redirect to="/apps/instance/view" />
 }
 export default Index
